@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LikhDe AI — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0A0A0F;
+      --surface: #111118;
+      --surface2: #1A1A24;
+      --border: #2A2A38;
+      --accent: #FF6B00;
+      --accent-dim: rgba(255,107,0,0.12);
+      --green: #00D37F;
+      --green-dim: rgba(0,211,127,0.12);
+      --red: #FF4444;
+      --red-dim: rgba(255,68,68,0.12);
+      --yellow: #FFB800;
+      --yellow-dim: rgba(255,184,0,0.12);
+      --text: #F0EEF8;
+      --muted: #6B6B80;
+      --mono: 'JetBrains Mono', monospace;
+      --display: 'Space Grotesk', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--display);
+      min-height: 100vh;
+    }
+
+    /* LOGIN SCREEN */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .login-logo {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .login-logo span { color: var(--accent); }
+
+    .login-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 32px;
+      font-family: var(--mono);
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-family: var(--mono);
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus { border-color: var(--accent); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover { opacity: 0.88; }
+
+    .login-err {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--red);
+      font-family: var(--mono);
+      display: none;
+    }
+
+    /* MAIN PANEL */
+    #main-panel { display: none; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .topbar-logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .topbar-logo span { color: var(--accent); }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--green);
+      background: var(--green-dim);
+      padding: 5px 10px;
+      border-radius: 20px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .btn-logout {
+      font-size: 12px;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      transition: color 0.2s;
+    }
+
+    .btn-logout:hover { color: var(--text); }
+
+    .content { padding: 24px; max-width: 900px; margin: 0 auto; }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .stat-value.orange { color: var(--accent); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+
+    /* FILTER TABS */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .filter-btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* PAYMENT CARDS */
+    .payment-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .payment-card:hover { border-color: #3A3A50; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .card-email {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .card-time {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-family: var(--mono);
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .status-badge.pending { background: var(--yellow-dim); color: var(--yellow); }
+    .status-badge.approved { background: var(--green-dim); color: var(--green); }
+    .status-badge.rejected { background: var(--red-dim); color: var(--red); }
+
+    .card-utr {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
+
+    .utr-label {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .utr-value {
+      font-size: 13px;
+      font-family: var(--mono);
+      color: var(--text);
+      flex: 1;
+    }
+
+    .copy-btn {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .copy-btn:hover { color: var(--text); }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-approve {
+      flex: 1;
+      padding: 10px;
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid var(--green);
+      border-radius: 8px;
+      font-family: var(--display);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-approve:hover { background: var(--green); color: #000; }
+
+    .btn-reject {
+      flex: 1;
+      padding: 10px;
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid var(--red);
+      border-radius: 8px;
+      font-family: var(--display);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-reject:hover { background: var(--red); color: #fff; }
+
+    .btn-disabled {
+      flex: 1;
+      padding: 10px;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--display);
+      font-size: 13px;
+      cursor: not-allowed;
+      text-align: center;
+    }
+
+    /* SCREENSHOT */
+    .screenshot-link {
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--accent);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .screenshot-link:hover { text-decoration: underline; }
+
+    /* EMPTY / LOADING */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+    .loading-text {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-family: var(--mono);
+      color: var(--text);
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error { border-color: var(--red); color: var(--red); }
+
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .stat-value { font-size: 22px; }
+      .content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Likh<span>De</span> AI</div>
+    <div class="login-sub">// admin panel</div>
+    <div class="field">
+      <label>Admin Key</label>
+      <input type="password" id="admin-key-input" placeholder="Enter secret key" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Access Panel →</button>
+    <div class="login-err" id="login-err">❌ Wrong key, bhai!</div>
+  </div>
+</div>
+
+<!-- MAIN PANEL -->
+<div id="main-panel">
+  <div class="topbar">
+    <div class="topbar-logo">Likh<span>De</span> AI</div>
+    <div class="topbar-right">
+      <div class="badge-live"><div class="dot"></div>Live</div>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value orange" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value yellow" id="stat-pending">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value green" id="stat-approved">—</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterPayments('all', this)">All</button>
+      <button class="filter-btn" onclick="filterPayments('pending', this)">Pending</button>
+      <button class="filter-btn" onclick="filterPayments('approved', this)">Approved</button>
+      <button class="filter-btn" onclick="filterPayments('rejected', this)">Rejected</button>
+    </div>
+
+    <!-- Payments List -->
+    <div id="payments-list">
+      <div class="loading-text">Loading payments...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const BACKEND = "https://likhde-ai-backend-akw0.onrender.com";
+  let adminKey = "";
+  let allPayments = [];
+  let currentFilter = "all";
+
+  function doLogin() {
+    const key = document.getElementById("admin-key-input").value.trim();
+    if (!key) return;
+    adminKey = key;
+    fetchPayments();
+  }
+
+  document.getElementById("admin-key-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doLogin();
+  });
+
+  async function fetchPayments() {
+    try {
+      const res = await fetch(`${BACKEND}/api/admin/payments`, {
+        headers: { "x-admin-key": adminKey }
+      });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        document.getElementById("login-err").style.display = "block";
+        return;
+      }
+
+      // Login success
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("main-panel").style.display = "block";
+
+      allPayments = data.payments || [];
+      updateStats();
+      renderPayments(currentFilter);
+    } catch (err) {
+      document.getElementById("login-err").style.display = "block";
+    }
+  }
+
+  function updateStats() {
+    const total = allPayments.length;
+    const pending = allPayments.filter(p => p.status === "pending").length;
+    const approved = allPayments.filter(p => p.status === "approved").length;
+    document.getElementById("stat-total").textContent = total;
+    document.getElementById("stat-pending").textContent = pending;
+    document.getElementById("stat-approved").textContent = approved;
+  }
+
+  function filterPayments(status, btn) {
+    currentFilter = status;
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderPayments(status);
+  }
+
+  function renderPayments(filter) {
+    const list = document.getElementById("payments-list");
+    const filtered = filter === "all" ? allPayments : allPayments.filter(p => p.status === filter);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Koi payment nahi mili</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(p => `
+      <div class="payment-card" id="card-${p.id}">
+        <div class="card-top">
+          <div>
+            <div class="card-email">${p.user_email}</div>
+            <div class="card-time">${formatTime(p.created_at)}</div>
+          </div>
+          <span class="status-badge ${p.status}">${p.status}</span>
+        </div>
+
+        <div class="card-utr">
+          <span class="utr-label">UTR</span>
+          <span class="utr-value">${p.utr}</span>
+          <button class="copy-btn" onclick="copyUTR('${p.utr}')">copy</button>
+        </div>
+
+        ${p.screenshot_url ? `<a href="${p.screenshot_url}" target="_blank" class="screenshot-link">📸 Screenshot dekho →</a>` : ""}
+
+        <div class="card-actions">
+          ${p.status === "pending" ? `
+            <button class="btn-approve" onclick="verify('${p.id}', 'approved')">✓ Approve</button>
+            <button class="btn-reject" onclick="verify('${p.id}', 'rejected')">✕ Reject</button>
+          ` : `<div class="btn-disabled">${p.status === "approved" ? "✓ Approved" : "✕ Rejected"}</div>`}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function verify(paymentId, action) {
+    try {
+      const res = await fetch(`${BACKEND}/api/admin/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-key": adminKey
+        },
+        body: JSON.stringify({ payment_id: paymentId, action })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(data.message, "success");
+        // Update locally
+        const p = allPayments.find(p => p.id === paymentId);
+        if (p) p.status = action;
+        updateStats();
+        renderPayments(currentFilter);
+      } else {
+        showToast(data.error, "error");
+      }
+    } catch (err) {
+      showToast("Network error!", "error");
+    }
+  }
+
+  function copyUTR(utr) {
+    navigator.clipboard.writeText(utr);
+    showToast("UTR copied!", "success");
+  }
+
+  function formatTime(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) +
+      " · " + d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function showToast(msg, type) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove("show"), 3000);
+  }
+
+  function logout() {
+    adminKey = "";
+    allPayments = [];
+    document.getElementById("main-panel").style.display = "none";
+    document.getElementById("login-screen").style.display = "flex";
+    document.getElementById("admin-key-input").value = "";
+  }
+</script>
+</body>
+  </html>
+  
